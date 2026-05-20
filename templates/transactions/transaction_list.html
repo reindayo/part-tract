@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}Transactions — PartTrack{% endblock %}
+{% block page_title %}Stock Transactions{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl font-bold text-gray-800">Stock Transactions</h2>
+    <p class="text-sm text-gray-500 mt-0.5">Track all stock movements</p>
+  </div>
+  <button onclick="openModal('addTxModal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 active:scale-[0.98]" style="background: linear-gradient(135deg, #1F6F5F, #2FA084)">
+    <i class="fas fa-exchange-alt"></i> New Transaction
+  </button>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-3">
+      <i class="fas fa-arrow-down text-green-600 text-sm"></i>
+    </div>
+    <p class="text-2xl font-bold text-gray-800">{{ transactions|length }}</p>
+    <p class="text-xs text-gray-400 mt-0.5">Total Records</p>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-3">
+      <i class="fas fa-plus text-emerald-600 text-sm"></i>
+    </div>
+    <p class="text-2xl font-bold text-gray-800">{{ transactions|length }}</p>
+    <p class="text-xs text-gray-400 mt-0.5">Stock In</p>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
+      <i class="fas fa-minus text-red-500 text-sm"></i>
+    </div>
+    <p class="text-2xl font-bold text-gray-800">—</p>
+    <p class="text-xs text-gray-400 mt-0.5">Stock Out</p>
+  </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-100" style="background:#f8fdfb">
+          <th class="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Part</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">By</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date &amp; Time</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for tx in transactions %}
+        <tr class="table-row">
+          <td class="px-6 py-3.5 text-sm text-gray-400">{{ forloop.counter }}</td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 {% if tx.transaction_type == 'IN' %}bg-green-100{% else %}bg-red-100{% endif %}">
+                <i class="fas {% if tx.transaction_type == 'IN' %}fa-arrow-down text-green-600{% else %}fa-arrow-up text-red-500{% endif %} text-xs"></i>
+              </div>
+              <span class="text-sm font-medium text-gray-800">{{ tx.part.part_name }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold {% if tx.transaction_type == 'IN' %}badge-in{% else %}badge-out{% endif %}">
+              {% if tx.transaction_type == 'IN' %}▲ STOCK IN{% else %}▼ STOCK OUT{% endif %}
+            </span>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="text-sm font-bold {% if tx.transaction_type == 'IN' %}text-green-700{% else %}text-red-600{% endif %}">
+              {% if tx.transaction_type == 'IN' %}+{% else %}-{% endif %}{{ tx.quantity }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+                {{ tx.user.username|first|upper|default:"?" }}
+              </div>
+              <span class="text-sm text-gray-600">{{ tx.user.username|default:"—" }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3.5">
+            <p class="text-sm text-gray-700">{{ tx.date|date:"M d, Y" }}</p>
+            <p class="text-xs text-gray-400">{{ tx.date|date:"h:i A" }}</p>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-6 py-16 text-center">
+            <i class="fas fa-exchange-alt text-gray-200 text-5xl mb-4 block"></i>
+            <p class="text-gray-500 font-medium">No transactions yet</p>
+            <p class="text-gray-400 text-sm mt-1">Record stock in or out to get started</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if transactions %}
+  <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+    <p class="text-xs text-gray-400">{{ transactions|length }} transaction{{ transactions|length|pluralize }} total</p>
+  </div>
+  {% endif %}
+</div>
+
+
+<!-- ── ADD TRANSACTION MODAL ── -->
+<div class="modal-backdrop" id="addTxModal">
+  <div class="modal-card">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+          <i class="fas fa-exchange-alt text-white text-sm"></i>
+        </div>
+        <h3 class="text-base font-semibold text-gray-800">New Transaction</h3>
+      </div>
+      <button onclick="closeModal('addTxModal')" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+        <i class="fas fa-xmark text-gray-500 text-sm"></i>
+      </button>
+    </div>
+    <form method="post" action="{% url 'transaction-add' %}" class="p-6 space-y-4">
+      {% csrf_token %}
+
+      <!-- Type Selector -->
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Transaction Type *</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="cursor-pointer">
+            <input type="radio" name="transaction_type" value="IN" class="sr-only peer" required/>
+            <div class="peer-checked:ring-2 peer-checked:ring-green-500 peer-checked:bg-green-50 border-2 border-gray-200 rounded-xl p-3 text-center transition">
+              <i class="fas fa-arrow-circle-down text-2xl text-green-500 mb-1 block"></i>
+              <p class="text-sm font-semibold text-gray-700">Stock IN</p>
+              <p class="text-xs text-gray-400">Add inventory</p>
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="transaction_type" value="OUT" class="sr-only peer"/>
+            <div class="peer-checked:ring-2 peer-checked:ring-red-400 peer-checked:bg-red-50 border-2 border-gray-200 rounded-xl p-3 text-center transition">
+              <i class="fas fa-arrow-circle-up text-2xl text-red-500 mb-1 block"></i>
+              <p class="text-sm font-semibold text-gray-700">Stock OUT</p>
+              <p class="text-xs text-gray-400">Remove inventory</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Part *</label>
+        <select name="part" required class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <option value="">— Select a part —</option>
+          {% for part in parts %}
+            <option value="{{ part.id }}">{{ part.part_name }} (Stock: {{ part.quantity }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity *</label>
+        <input type="number" name="quantity" min="1" required placeholder="Enter quantity"
+          class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal('addTxModal')" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+          <i class="fas fa-check mr-1"></i> Record Transaction
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

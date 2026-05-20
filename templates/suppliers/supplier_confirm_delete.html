@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Supplier — PartTrack{% endblock %}
+{% block page_title %}Delete Supplier{% endblock %}
+{% block page_subtitle %}This action cannot be undone{% endblock %}
+
+{% block content %}
+
+<div class="max-w-md">
+  <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-red-100 bg-red-50">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-red-700">Confirm Deletion</h2>
+          <p class="text-xs text-red-400">This will permanently delete the supplier</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-6">
+      <p class="text-sm text-gray-600 mb-1">You are about to delete:</p>
+      <p class="text-base font-semibold text-gray-800 mb-1">{{ supplier.name }}</p>
+      {% if supplier.contact %}
+      <p class="text-xs text-gray-400 mb-4">Contact: {{ supplier.contact }}</p>
+      {% else %}
+      <div class="mb-4"></div>
+      {% endif %}
+
+      <div class="p-3 bg-yellow-50 border border-yellow-100 rounded-lg mb-5">
+        <p class="text-xs text-yellow-700">
+          Parts linked to this supplier will not be deleted, but they will lose their supplier assignment.
+        </p>
+      </div>
+
+      <form method="post" class="flex items-center gap-3">
+        {% csrf_token %}
+        <button type="submit"
+          class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition">
+          Yes, Delete
+        </button>
+        <a href="{% url 'supplier-list' %}"
+          class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition">
+          Cancel
+        </a>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

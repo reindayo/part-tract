@@ -1,0 +1,11 @@
+{
+  "name": "part-track",
+  "version": "1.0.0",
+  "scripts": {
+    "tailwind": "npx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "...",
+    "tailwindcss": "..."
+  }
+}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block title %}Suppliers — PartTrack{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h2 class="text-xl font-bold text-gray-800">Suppliers</h2>
+    <p class="text-sm text-gray-500 mt-0.5">Manage your part suppliers</p>
+  </div>
+  <button onclick="openModal('addSupModal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 active:scale-[0.98]" style="background: linear-gradient(135deg, #1F6F5F, #2FA084)">
+    <i class="fas fa-plus"></i> Add Supplier
+  </button>
+</div>
+
+<!-- Suppliers Table -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-100" style="background:#f8fdfb">
+          <th class="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier Name</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Parts</th>
+          <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for supplier in suppliers %}
+        <tr class="table-row group">
+          <td class="px-6 py-3.5 text-sm text-gray-400">{{ forloop.counter }}</td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+                {{ supplier.name|first|upper }}
+              </div>
+              <span class="text-sm font-semibold text-gray-800">{{ supplier.name }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3.5 text-sm text-gray-500">
+            {% if supplier.contact %}
+              <span class="flex items-center gap-1.5">
+                <i class="fas fa-phone text-gray-300 text-xs"></i>{{ supplier.contact }}
+              </span>
+            {% else %}
+              <span class="text-gray-300">—</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-50 text-teal-700">
+              {{ supplier.part_set.count }} part{{ supplier.part_set.count|pluralize }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-2">
+              <button onclick="openEditSupModal({{ supplier.pk }}, '{{ supplier.name|escapejs }}', '{{ supplier.contact|escapejs }}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-blue-500 bg-blue-50 hover:bg-blue-100 transition">
+                <i class="fas fa-pen text-xs"></i>
+              </button>
+              <button onclick="openDeleteSupModal({{ supplier.pk }}, '{{ supplier.name|escapejs }}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 bg-red-50 hover:bg-red-100 transition">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-16 text-center">
+            <i class="fas fa-truck text-gray-200 text-5xl mb-4 block"></i>
+            <p class="text-gray-500 font-medium">No suppliers yet</p>
+            <p class="text-gray-400 text-sm mt-1">Click "Add Supplier" to get started</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if suppliers %}
+  <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+    <p class="text-xs text-gray-400">{{ suppliers|length }} supplier{{ suppliers|length|pluralize }} total</p>
+  </div>
+  {% endif %}
+</div>
+
+
+<!-- ── ADD MODAL ── -->
+<div class="modal-backdrop" id="addSupModal">
+  <div class="modal-card">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+          <i class="fas fa-plus text-white text-sm"></i>
+        </div>
+        <h3 class="text-base font-semibold text-gray-800">Add Supplier</h3>
+      </div>
+      <button onclick="closeModal('addSupModal')" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+        <i class="fas fa-xmark text-gray-500 text-sm"></i>
+      </button>
+    </div>
+    <form method="post" action="{% url 'supplier-add' %}" class="p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Supplier Name *</label>
+        <input type="text" name="name" required placeholder="e.g. TechSource PH"
+          class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Contact Info</label>
+        <input type="text" name="contact" placeholder="Phone number or email"
+          class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal('addSupModal')" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
+          <i class="fas fa-plus mr-1"></i> Add Supplier
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ── EDIT MODAL ── -->
+<div class="modal-backdrop" id="editSupModal">
+  <div class="modal-card">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500">
+          <i class="fas fa-pen text-white text-sm"></i>
+        </div>
+        <h3 class="text-base font-semibold text-gray-800">Edit Supplier</h3>
+      </div>
+      <button onclick="closeModal('editSupModal')" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+        <i class="fas fa-xmark text-gray-500 text-sm"></i>
+      </button>
+    </div>
+    <form method="post" id="editSupForm" class="p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Supplier Name *</label>
+        <input type="text" name="name" id="editSupName" required
+          class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Contact Info</label>
+        <input type="text" name="contact" id="editSupContact"
+          class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal('editSupModal')" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition bg-blue-500">
+          <i class="fas fa-check mr-1"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ── DELETE MODAL ── -->
+<div class="modal-backdrop" id="deleteSupModal">
+  <div class="modal-card delete-card">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-trash-can text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Delete Supplier?</h3>
+      <p class="text-sm text-gray-500 mb-1">You're about to delete</p>
+      <p class="text-sm font-semibold text-gray-800 mb-4" id="deleteSupName"></p>
+      <p class="text-xs text-red-500 mb-6">Parts linked to this supplier will become unassigned.</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal('deleteSupModal')" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+        <form method="post" id="deleteSupForm" class="flex-1">
+          {% csrf_token %}
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
+            <i class="fas fa-trash mr-1"></i> Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+function openEditSupModal(pk, name, contact) {
+  document.getElementById('editSupForm').action = '/suppliers/' + pk + '/edit/';
+  document.getElementById('editSupName').value = name;
+  document.getElementById('editSupContact').value = contact;
+  openModal('editSupModal');
+}
+function openDeleteSupModal(pk, name) {
+  document.getElementById('deleteSupName').textContent = '"' + name + '"';
+  document.getElementById('deleteSupForm').action = '/suppliers/' + pk + '/delete/';
+  openModal('deleteSupModal');
+}
+{% endblock %}
