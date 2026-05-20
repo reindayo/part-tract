@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Parts — PartTrack{% endblock %}
 {% block page_title %}Parts Inventory{% endblock %}
-
+ 
 {% block content %}
 <!-- Page Header -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -13,21 +13,37 @@
     <i class="fas fa-plus"></i> Add Part
   </button>
 </div>
-
+ 
 <!-- Filters -->
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-5">
   <form method="get" class="flex flex-col sm:flex-row gap-3">
     <div class="relative flex-1">
       <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-      <input type="text" name="q" value="{{ query }}" placeholder="Search parts..."
+      <input type="text" id="live-search" name="q" value="{{ query }}" placeholder="Search parts..."
         class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 bg-gray-50"/>
     </div>
-    <select name="category" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-500 bg-gray-50 text-gray-700">
-      <option value="">All Categories</option>
-      {% for cat in categories %}
-        <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-      {% endfor %}
-    </select>
+    <div class="relative" id="filter-cat-dd">
+      <input type="hidden" name="category" id="filter-cat-value" value="{{ selected_category }}"/>
+      <button type="button" onclick="toggleFilterCat()"
+        class="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-700 min-w-40 justify-between">
+        <span id="filter-cat-label">
+          {% if selected_category %}
+            {% for cat in categories %}{% if cat.id|stringformat:"s" == selected_category %}{{ cat.name }}{% endif %}{% endfor %}
+          {% else %}All Categories{% endif %}
+        </span>
+        <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+      </button>
+      <div id="filter-cat-menu" class="hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div onclick="pickFilterCat('', 'All Categories')" class="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 text-gray-700">All Categories</div>
+        {% for cat in categories %}
+        <div onclick="pickFilterCat('{{ cat.id }}', '{{ cat.name|escapejs }}')"
+          class="px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 text-gray-700"
+          {% if cat.id|stringformat:"s" == selected_category %}style="color:#1F6F5F;background:#E6F4F1;font-weight:500;"{% endif %}>
+          {{ cat.name }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
     <button type="submit" class="px-4 py-2.5 rounded-xl text-white text-sm font-medium hover:opacity-90" style="background:#2FA084">
       <i class="fas fa-filter mr-1"></i> Filter
     </button>
@@ -38,13 +54,13 @@
     {% endif %}
   </form>
 </div>
-
+ 
 <!-- Table -->
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
   <div class="overflow-x-auto">
     <table class="w-full">
       <thead>
-        <tr class="border-b border-gray-100" style="background:#f8fdfb">
+        <tr class="border-b border-gray-100 dk-thead" style="background:#f8fdfb">
           <th class="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Part Name</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
@@ -53,9 +69,9 @@
           <th class="text-left px-4 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-50">
+      <tbody id="parts-tbody" class="divide-y divide-gray-50">
         {% for part in parts %}
-        <tr class="table-row group">
+        <tr class="hover:bg-gray-50 transition">
           <td class="px-6 py-3.5">
             <div>
               <p class="text-sm font-semibold text-gray-800">{{ part.part_name }}</p>
@@ -74,17 +90,15 @@
             <span class="text-sm font-bold {% if part.quantity <= 5 %}text-red-600{% elif part.quantity <= 10 %}text-amber-600{% else %}text-gray-800{% endif %}">
               {{ part.quantity }}
             </span>
-            {% if part.quantity <= 5 %}<span class="ml-1 text-xs badge-low px-1.5 py-0.5 rounded-md">Low</span>{% endif %}
+            {% if part.quantity <= 5 %}<span class="ml-1 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md">Low</span>{% endif %}
           </td>
           <td class="px-4 py-3.5 text-sm text-gray-700">₱{{ part.price }}</td>
           <td class="px-4 py-3.5">
             <div class="flex items-center gap-2">
-              <!-- Edit Button -->
               <button onclick="openEditModal({{ part.pk }}, '{{ part.part_name|escapejs }}', '{{ part.category_id|default:"" }}', '{{ part.supplier_id|default:"" }}', {{ part.quantity }}, '{{ part.price }}', '{{ part.description|escapejs }}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-teal-600 bg-teal-50 hover:bg-teal-100 transition">
                 <i class="fas fa-pen text-xs"></i>
               </button>
-              <!-- Delete Button -->
               <button onclick="openDeleteModal({{ part.pk }}, '{{ part.part_name|escapejs }}')"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 bg-red-50 hover:bg-red-100 transition">
                 <i class="fas fa-trash text-xs"></i>
@@ -93,7 +107,7 @@
           </td>
         </tr>
         {% empty %}
-        <tr>
+        <tr id="empty-row">
           <td colspan="6" class="px-6 py-16 text-center">
             <i class="fas fa-box-open text-gray-200 text-5xl mb-4 block"></i>
             <p class="text-gray-500 font-medium">No parts found</p>
@@ -106,13 +120,13 @@
   </div>
   {% if parts %}
   <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
-    <p class="text-xs text-gray-400">Showing {{ parts|length }} part{{ parts|length|pluralize }}</p>
+    <p class="text-xs text-gray-400" id="parts-counter">Showing {{ parts|length }} part{{ parts|length|pluralize }}</p>
   </div>
   {% endif %}
 </div>
-
-
-<!-- ── ADD MODAL ── -->
+ 
+ 
+<!-- ADD MODAL -->
 <div class="modal-backdrop" id="addModal">
   <div class="modal-card">
     <div class="flex items-center justify-between p-6 border-b border-gray-100">
@@ -132,18 +146,18 @@
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Part Name *</label>
           <input type="text" name="part_name" required placeholder="e.g. RTX 4070"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Category</label>
-          <select name="category" class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <select name="category" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none">
             <option value="">— Select —</option>
             {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Supplier</label>
-          <select name="supplier" class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <select name="supplier" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none">
             <option value="">— Select —</option>
             {% for sup in suppliers %}<option value="{{ sup.id }}">{{ sup.name }}</option>{% endfor %}
           </select>
@@ -151,17 +165,17 @@
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
           <input type="number" name="quantity" value="0" min="0"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Price (₱)</label>
           <input type="number" name="price" value="0" min="0" step="0.01"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
           <textarea name="description" rows="2" placeholder="Optional description..."
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none"></textarea>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"></textarea>
         </div>
       </div>
       <div class="flex gap-3 pt-2">
@@ -173,14 +187,14 @@
     </form>
   </div>
 </div>
-
-
-<!-- ── EDIT MODAL ── -->
+ 
+ 
+<!-- EDIT MODAL -->
 <div class="modal-backdrop" id="editModal">
   <div class="modal-card">
     <div class="flex items-center justify-between p-6 border-b border-gray-100">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#2FA084">
           <i class="fas fa-pen text-white text-sm"></i>
         </div>
         <h3 class="text-base font-semibold text-gray-800">Edit Part</h3>
@@ -195,18 +209,18 @@
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Part Name *</label>
           <input type="text" name="part_name" id="edit_part_name" required
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Category</label>
-          <select name="category" id="edit_category" class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <select name="category" id="edit_category" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none">
             <option value="">— Select —</option>
             {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Supplier</label>
-          <select name="supplier" id="edit_supplier" class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <select name="supplier" id="edit_supplier" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none">
             <option value="">— Select —</option>
             {% for sup in suppliers %}<option value="{{ sup.id }}">{{ sup.name }}</option>{% endfor %}
           </select>
@@ -214,31 +228,31 @@
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
           <input type="number" name="quantity" id="edit_quantity" min="0"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Price (₱)</label>
           <input type="number" name="price" id="edit_price" min="0" step="0.01"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"/>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"/>
         </div>
         <div class="sm:col-span-2">
           <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
           <textarea name="description" id="edit_description" rows="2"
-            class="form-input w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none"></textarea>
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none focus:outline-none" onfocus="this.style.boxShadow='0 0 0 2px #2FA084'" onblur="this.style.boxShadow='none'"></textarea>
         </div>
       </div>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="closeModal('editModal')" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
-        <button type="submit" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition bg-blue-500">
+        <button type="submit" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition" style="background:linear-gradient(135deg,#1F6F5F,#2FA084)">
           <i class="fas fa-check mr-1"></i> Save Changes
         </button>
       </div>
     </form>
   </div>
 </div>
-
-
-<!-- ── DELETE MODAL ── -->
+ 
+ 
+<!-- DELETE MODAL -->
 <div class="modal-backdrop" id="deleteModal">
   <div class="modal-card delete-card">
     <div class="p-6 text-center">
@@ -261,26 +275,87 @@
     </div>
   </div>
 </div>
-
-{% endblock %}
-
-{% block extra_js %}
-function openEditModal(pk, name, catId, supId, qty, price, desc) {
-  document.getElementById('editForm').action = '/parts/' + pk + '/edit/';
-  document.getElementById('edit_part_name').value = name;
-  document.getElementById('edit_quantity').value = qty;
-  document.getElementById('edit_price').value = price;
-  document.getElementById('edit_description').value = desc;
-  const catSel = document.getElementById('edit_category');
-  for (let o of catSel.options) o.selected = (o.value == catId);
-  const supSel = document.getElementById('edit_supplier');
-  for (let o of supSel.options) o.selected = (o.value == supId);
-  openModal('editModal');
-}
-
-function openDeleteModal(pk, name) {
-  document.getElementById('deletePartName').textContent = '"' + name + '"';
-  document.getElementById('deleteForm').action = '/parts/' + pk + '/delete/';
-  openModal('deleteModal');
-}
+ 
+ 
+<script>
+  // ── FILTER DROPDOWN ──
+  function toggleFilterCat() {
+    document.getElementById('filter-cat-menu').classList.toggle('hidden');
+  }
+  function pickFilterCat(id, name) {
+    document.getElementById('filter-cat-value').value = id;
+    document.getElementById('filter-cat-label').textContent = name;
+    document.getElementById('filter-cat-menu').classList.add('hidden');
+    document.querySelector('form').submit();
+  }
+  document.addEventListener('click', function(e) {
+    const dd = document.getElementById('filter-cat-dd');
+    if (dd && !dd.contains(e.target))
+      document.getElementById('filter-cat-menu').classList.add('hidden');
+  });
+ 
+  // ── EDIT MODAL ──
+  function openEditModal(pk, name, catId, supId, qty, price, desc) {
+    document.getElementById('editForm').action = '/parts/' + pk + '/edit/';
+    document.getElementById('edit_part_name').value = name;
+    document.getElementById('edit_quantity').value = qty;
+    document.getElementById('edit_price').value = price;
+    document.getElementById('edit_description').value = desc;
+    const catSel = document.getElementById('edit_category');
+    for (let o of catSel.options) o.selected = (o.value == catId);
+    const supSel = document.getElementById('edit_supplier');
+    for (let o of supSel.options) o.selected = (o.value == supId);
+    openModal('editModal');
+  }
+ 
+  // ── DELETE MODAL ──
+  function openDeleteModal(pk, name) {
+    document.getElementById('deletePartName').textContent = '"' + name + '"';
+    document.getElementById('deleteForm').action = '/parts/' + pk + '/delete/';
+    openModal('deleteModal');
+  }
+ 
+  // ── LIVE SEARCH ──
+  // Step 1: Find the search input box using its ID "live-search"
+  const searchInput = document.getElementById('live-search');
+ 
+  // Step 2: Listen for every keystroke the user types inside the input
+  searchInput.addEventListener('input', function() {
+ 
+    // Step 3: Get what the user typed and convert to lowercase for case-insensitive matching
+    const keyword = this.value.toLowerCase();
+ 
+    // Step 4: Get all table rows inside the tbody with ID "parts-tbody"
+    const rows = document.querySelectorAll('#parts-tbody tr');
+ 
+    // Step 5: Loop through every row one by one
+    rows.forEach(function(row) {
+ 
+      // Step 6: Get all the text inside that row and convert to lowercase
+      const rowText = row.textContent.toLowerCase();
+ 
+      // Step 7: If the row text contains the keyword, show it — otherwise hide it
+      if (rowText.includes(keyword)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+ 
+    // Step 8: Count how many rows are still visible after filtering
+    const visibleRows = document.querySelectorAll('#parts-tbody tr:not([style*="display: none"])');
+ 
+    // Step 9: Update the counter text at the bottom of the table
+    const counter = document.getElementById('parts-counter');
+    if (counter) {
+      counter.textContent = 'Showing ' + visibleRows.length + ' part' + (visibleRows.length !== 1 ? 's' : '');
+    }
+  });
+ 
+  // ── ESCAPE KEY closes modals ──
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') ['addModal','editModal','deleteModal'].forEach(closeModal);
+  });
+</script>
+ 
 {% endblock %}

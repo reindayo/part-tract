@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,26 +7,21 @@
   <title>{% block title %}PartTrack{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
   <style>
     * { font-family: 'Inter', sans-serif; }
-
     :root {
       --dark-green: #1F6F5F;
       --teal-green: #2FA084;
       --light-green: #6FCF97;
       --light-gray: #EEEEEE;
     }
-
-    /* Sidebar */
     .sidebar { background: linear-gradient(180deg, #1F6F5F 0%, #155248 100%); }
     .sidebar-link { transition: all 0.2s ease; border-radius: 8px; }
     .sidebar-link:hover, .sidebar-link.active {
       background: rgba(255,255,255,0.15);
       transform: translateX(4px);
     }
-
-    /* Modal Backdrop */
     .modal-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.5);
@@ -36,11 +32,7 @@
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s ease;
     }
-    .modal-backdrop.open {
-      opacity: 1; pointer-events: all;
-    }
-
-    /* Modal Card */
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
     .modal-card {
       background: white;
       border-radius: 16px;
@@ -51,50 +43,31 @@
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
       opacity: 0;
     }
-    .modal-backdrop.open .modal-card {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-
-    /* Delete Modal */
+    .modal-backdrop.open .modal-card { transform: scale(1) translateY(0); opacity: 1; }
     .modal-card.delete-card { max-width: 420px; }
-
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #2FA084; border-radius: 3px; }
-
-    /* Input focus */
     .form-input:focus {
       outline: none;
       border-color: #2FA084;
       box-shadow: 0 0 0 3px rgba(47,160,132,0.15);
     }
-
-    /* Table row hover */
     .table-row { transition: background 0.15s ease; }
     .table-row:hover { background: #f0fdf8; }
-
-    /* Badge */
     .badge-in { background: #d1fae5; color: #065f46; }
     .badge-out { background: #fee2e2; color: #991b1b; }
     .badge-low { background: #fef3c7; color: #92400e; }
-
-    /* Page transition */
     .page-content { animation: fadeUp 0.3s ease; }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* Mobile sidebar overlay */
     #sidebar-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.4); z-index: 39;
     }
     #sidebar-overlay.show { display: block; }
-
-    /* Toast notifications */
     .toast-container {
       position: fixed; top: 1.25rem; right: 1.25rem;
       z-index: 100; display: flex; flex-direction: column; gap: 0.5rem;
@@ -118,13 +91,145 @@
     @keyframes slideOut {
       to { opacity: 0; transform: translateX(60px); }
     }
+ 
+    /* ── DARK MODE ── */
+    body.dark { background-color: #0f172a; color: #e2e8f0; }
+    body.dark header { background-color: #1e293b !important; border-color: #334155 !important; }
+    body.dark main { background-color: #0f172a; }
+    body.dark .bg-white { background-color: #1e293b !important; }
+    body.dark .bg-gray-100 { background-color: #0f172a !important; }
+    body.dark .bg-gray-50 { background-color: #162032 !important; }
+    body.dark .border-gray-100,
+    body.dark .border-gray-200 { border-color: #334155 !important; }
+    body.dark .text-gray-800 { color: #e2e8f0 !important; }
+    body.dark .text-gray-700 { color: #cbd5e1 !important; }
+    body.dark .text-gray-600 { color: #94a3b8 !important; }
+    body.dark .text-gray-500 { color: #64748b !important; }
+    body.dark .text-gray-400 { color: #475569 !important; }
+    body.dark table thead tr { background: linear-gradient(135deg, #1F6F5F, #2FA084) !important; }
+    body.dark .divide-gray-50 > tr { border-color: #1e293b !important; }
+    body.dark input,
+    body.dark textarea,
+    body.dark select {
+      background-color: #0f172a !important;
+      border-color: #334155 !important;
+      color: #e2e8f0 !important;
+    }
+    body.dark .modal-card { background-color: #1e293b !important; }
+    body.dark .table-row:hover { background: #1a2e3b !important; }
+  
+  /* ── COMPREHENSIVE DARK MODE FIXES ── */
+
+  /* Backgrounds */
+  body.dark .bg-gray-50  { background-color: #0f172a !important; }
+  body.dark .bg-gray-100 { background-color: #1e293b !important; }
+  body.dark .bg-gray-200 { background-color: #334155 !important; }
+
+  /* Card surfaces — target by utility combos actually used in templates */
+  body.dark .bg-white { background-color: #1e293b !important; }
+  body.dark [class*="bg-white"] { background-color: #1e293b !important; }
+  /* Preserve sidebar logo icon and avatar bg-white/20 */
+  body.dark .bg-white\/20 { background-color: rgba(255,255,255,0.15) !important; }
+
+  /* Table header inline style override — JS-applied after load */
+  body.dark thead tr,
+  body.dark thead tr td,
+  body.dark thead tr th { background-color: #162032 !important; }
+  body.dark .dk-thead { background-color: #162032 !important; }
+
+  /* Table rows & cells */
+  body.dark tbody tr { background-color: #1e293b !important; }
+  body.dark tbody tr:hover,
+  body.dark .table-row:hover,
+  body.dark .hover\:bg-gray-50:hover { background-color: #1a2e3b !important; }
+  body.dark td { color: #cbd5e1 !important; border-color: #334155 !important; }
+  body.dark th { color: #94a3b8 !important; border-color: #334155 !important; }
+  body.dark .divide-y > tr,
+  body.dark .divide-gray-50 > * { border-color: #334155 !important; }
+
+  /* Text */
+  body.dark .text-gray-800 { color: #f1f5f9 !important; }
+  body.dark .text-gray-700 { color: #cbd5e1 !important; }
+  body.dark .text-gray-600 { color: #94a3b8 !important; }
+  body.dark .text-gray-500 { color: #64748b !important; }
+  body.dark .text-gray-400 { color: #475569 !important; }
+  body.dark .text-gray-300 { color: #334155 !important; }
+
+  /* Borders */
+  body.dark .border,
+  body.dark .border-gray-100 { border-color: #334155 !important; }
+  body.dark .border-gray-200 { border-color: #334155 !important; }
+  body.dark .border-t,
+  body.dark .border-b { border-color: #334155 !important; }
+
+  /* Inputs, selects, textareas */
+  body.dark input,
+  body.dark textarea,
+  body.dark select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+  }
+  body.dark ::placeholder { color: #475569 !important; }
+  body.dark select option { background-color: #1e293b; color: #e2e8f0; }
+
+  /* Hover states for buttons/links */
+  body.dark .hover\:bg-gray-100:hover { background-color: #1e293b !important; }
+  body.dark .hover\:bg-gray-200:hover { background-color: #334155 !important; }
+
+  /* Semantic color chips / badges */
+  body.dark .bg-green-50   { background-color: #064e3b !important; }
+  body.dark .text-green-600 { color: #34d399 !important; }
+  body.dark .bg-teal-50    { background-color: #134e4a !important; }
+  body.dark .text-teal-600,
+  body.dark .text-teal-700 { color: #6FCF97 !important; }
+  body.dark .bg-amber-50   { background-color: #2d1e02 !important; }
+  body.dark .border-amber-100 { border-color: #78350f !important; }
+  body.dark .text-amber-600 { color: #fbbf24 !important; }
+  body.dark .bg-red-50     { background-color: #3b1a1a !important; }
+  body.dark .bg-red-100    { background-color: #450a0a !important; }
+  body.dark .text-red-600  { color: #f87171 !important; }
+  body.dark .text-red-500  { color: #f87171 !important; }
+  body.dark .bg-blue-50    { background-color: #0c1e3b !important; }
+  body.dark .text-blue-600 { color: #60a5fa !important; }
+
+  /* Badge overrides */
+  body.dark .badge-in  { background: #064e3b !important; color: #6ee7b7 !important; }
+  body.dark .badge-out { background: #450a0a !important; color: #fca5a5 !important; }
+  body.dark .badge-low { background: #451a03 !important; color: #fcd34d !important; }
+
+  /* Modal */
+  body.dark .modal-card { background-color: #1e293b !important; color: #e2e8f0 !important; }
+  body.dark .modal-card .border-gray-100,
+  body.dark .modal-card .border-b { border-color: #334155 !important; }
+  body.dark .modal-card label { color: #94a3b8 !important; }
+  body.dark .modal-card h3,
+  body.dark .modal-card p { color: #e2e8f0 !important; }
+
+  /* Dropdown menus */
+  body.dark #filter-cat-menu,
+  body.dark [id$="-menu"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+  body.dark [id$="-menu"] > div:hover { background-color: #162032 !important; }
+  body.dark [id$="-menu"] > div { color: #cbd5e1 !important; }
+
+  /* Pagination footer */
+  body.dark .bg-gray-50.border-t { background-color: #162032 !important; }
+
+  /* Toast */
+  body.dark .toast.success { background: #064e3b !important; color: #6ee7b7 !important; }
+  body.dark .toast.error   { background: #3b1a1a !important; color: #fca5a5 !important; }
+  body.dark .toast.warning { background: #2d1e02 !important; color: #fcd34d !important; }
+  
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex">
-
+ 
   <!-- Sidebar Overlay (mobile) -->
   <div id="sidebar-overlay" onclick="closeSidebar()"></div>
-
+ 
   <!-- Sidebar -->
   <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-64 z-40 flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0">
     <!-- Logo -->
@@ -139,7 +244,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- Nav -->
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
       <p class="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">Main</p>
@@ -151,7 +256,6 @@
         <i class="fas fa-cogs w-5 text-center"></i>
         <span class="text-sm font-medium">Parts</span>
       </a>
-
       <p class="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mt-4 mb-2">Manage</p>
       <a href="{% url 'category-list' %}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-white/80 hover:text-white {% if 'category' in request.resolver_match.url_name %}active text-white{% endif %}">
         <i class="fas fa-tags w-5 text-center"></i>
@@ -166,7 +270,21 @@
         <span class="text-sm font-medium">Transactions</span>
       </a>
     </nav>
-
+ 
+    <!-- Dark Mode Toggle — inside sidebar, above user section -->
+    <div class="px-4 pb-2">
+      <button id="dark-toggle" onclick="toggleDarkMode()"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/20 transition">
+        <svg id="dark-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+        <svg id="light-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07l-.71.71M6.34 17.66l-.71.71m12.73 0l-.71-.71M6.34 6.34l-.71-.71M12 5a7 7 0 100 14A7 7 0 0012 5z"/>
+        </svg>
+        <span id="dark-label">Dark Mode</span>
+      </button>
+    </div>
+ 
     <!-- User -->
     <div class="p-4 border-t border-white/10">
       <div class="flex items-center gap-3 px-2 mb-3">
@@ -184,7 +302,7 @@
       </a>
     </div>
   </aside>
-
+ 
   <!-- Main -->
   <div class="flex-1 flex flex-col lg:ml-64 min-h-screen">
     <!-- Top bar -->
@@ -205,40 +323,38 @@
         </div>
       </div>
     </header>
-
+ 
     <!-- Page content -->
     <main class="flex-1 p-4 lg:p-6 page-content">
       {% block content %}{% endblock %}
     </main>
   </div>
-
+ 
   <!-- Toast Notifications -->
   <div class="toast-container" id="toastContainer">
     {% for message in messages %}
-      <div class="toast {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}" id="toast-{{ forloop.counter }}">
-        <i class="fas {% if message.tags == 'error' %}fa-circle-xmark{% elif message.tags == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i>
-        <span>{{ message }}</span>
-        <button onclick="this.parentElement.remove()" class="ml-auto text-current opacity-50 hover:opacity-100">
-          <i class="fas fa-xmark text-xs"></i>
-        </button>
-      </div>
+    <div class="toast {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}">
+      <i class="fas {% if message.tags == 'error' %}fa-circle-xmark{% elif message.tags == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto text-current opacity-50 hover:opacity-100">
+        <i class="fas fa-xmark text-xs"></i>
+      </button>
+    </div>
     {% endfor %}
   </div>
-
+ 
   <script>
-    // Sidebar toggle
+    // ── SIDEBAR ──
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('show');
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.toggle('show');
     }
     function closeSidebar() {
       document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('sidebar-overlay').classList.remove('show');
     }
-
-    // Modal helpers
+ 
+    // ── MODALS ──
     function openModal(id) {
       const m = document.getElementById(id);
       if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -247,16 +363,12 @@
       const m = document.getElementById(id);
       if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
     }
-
-    // Close modal on backdrop click
     document.addEventListener('click', function(e) {
       if (e.target.classList.contains('modal-backdrop')) {
         e.target.classList.remove('open');
         document.body.style.overflow = '';
       }
     });
-
-    // Close modal on Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal-backdrop.open').forEach(m => {
@@ -265,15 +377,65 @@
         });
       }
     });
-
-    // Auto-dismiss toasts
+ 
+    // ── TOASTS ──
     document.querySelectorAll('.toast').forEach((t, i) => {
       setTimeout(() => {
         t.style.animation = 'slideOut 0.35s ease forwards';
         setTimeout(() => t.remove(), 350);
       }, 4000 + i * 300);
     });
-
+ 
+    // ── DARK MODE ──
+ 
+    // Step 1: This function runs when the toggle button is clicked
+    function toggleDarkMode() {
+ 
+      // Step 2: Get the body element — this is where we add or remove the "dark" class
+      const body = document.body;
+ 
+      // Step 3: Toggle the "dark" class — adds it if missing, removes it if present
+      body.classList.toggle('dark');
+ 
+      // Step 4: Check if dark mode is now ON or OFF
+      const isDark = body.classList.contains('dark');
+ 
+      // Step 5: Save the preference in localStorage so it persists after page refresh
+      localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+ 
+      // Step 6: Update the button icon and label
+      updateDarkModeUI(isDark);
+    }
+ 
+    // Step 7: This function updates the icon and label on the toggle button
+    function updateDarkModeUI(isDark) {
+ 
+      // Step 8: Get the moon icon, sun icon, and label by their IDs
+      const darkIcon = document.getElementById('dark-icon');
+      const lightIcon = document.getElementById('light-icon');
+      const label = document.getElementById('dark-label');
+ 
+      // Step 9: Show sun + "Light Mode" when dark is ON, moon + "Dark Mode" when OFF
+      if (isDark) {
+        darkIcon.classList.add('hidden');
+        lightIcon.classList.remove('hidden');
+        label.textContent = 'Light Mode';
+      } else {
+        darkIcon.classList.remove('hidden');
+        lightIcon.classList.add('hidden');
+        label.textContent = 'Dark Mode';
+      }
+    }
+ 
+    // Step 10: On page load, read localStorage to restore the saved preference
+    const savedMode = localStorage.getItem('darkMode');
+ 
+    // Step 11: If dark mode was saved as enabled, apply it immediately
+    if (savedMode === 'enabled') {
+      document.body.classList.add('dark');
+      updateDarkModeUI(true);
+    }
+ 
     {% block extra_js %}{% endblock %}
   </script>
 </body>
